@@ -5,17 +5,20 @@ define(`__MAP__')
 //
 // Initial version partially copied from MIT licensed OpenZeppelin Contracts
 
-define(SOLT_MAP,
-
-SOLT_SET($1_set, $2, $3)
-``
+define(`SOLT_MAP',
+`SOLT_SET($1_set, $2)dnl'
+`pushdef(`MAP_KEYTYPE', $2)dnl'
+`pushdef(`MAP_KEYTYPEARG', `$2 IFVALUETYPE($2, , memory)')dnl'
+`pushdef(`MAP_VALUETYPE', $3)dnl'
+`pushdef(`MAP_VALUETYPEARG', `$3 IFVALUETYPE($3, , memory)')dnl'
+`
 library $1 {
     using $1_set for $1_set.Set;
     struct Map {
         // Storage of keys
         $1_set.Set keys;
         // Storage of values
-        mapping($2 => $4) values;
+        mapping(MAP_KEYTYPE => MAP_VALUETYPE) values;
     }
 
     //
@@ -25,7 +28,7 @@ library $1 {
     // Returns true if the key was added to the map, that is if it was not
     // already present.
     //
-    function set(Map storage map, $3 key, $5 value) internal returns (bool) {
+    function set(Map storage map, MAP_KEYTYPEARG key, MAP_VALUETYPEARG value) internal returns (bool) {
         map.values[key] = value;
         return map.keys.add(key);
     }
@@ -35,7 +38,7 @@ library $1 {
     //
     // Returns true if the key was removed from the map, that is if it was present.
     //
-    function remove(Map storage map, $3 key) internal returns (bool) {
+    function remove(Map storage map, MAP_KEYTYPEARG key) internal returns (bool) {
         delete map.values[key];
         return map.keys.remove(key);
     }
@@ -43,7 +46,7 @@ library $1 {
     //
     // @dev Returns true if the key is in the map. O(1).
     //
-    function contains(Map storage map, $3 key) internal view returns (bool) {
+    function contains(Map storage map, MAP_KEYTYPEARG key) internal view returns (bool) {
         return map.keys.contains(key);
     }
 
@@ -62,10 +65,10 @@ library $1 {
     //
     // Requirements:
     //
-    // - index must be strictly less than {length}.
+    // - index must be strictly less, than {length}.
     //
-    function at(Map storage map, uint256 index) internal view returns ($3 key, $5 value) {
-        $3 atKey = map.keys.at(index);
+    function at(Map storage map, uint256 index) internal view returns (MAP_KEYTYPEARG key, MAP_VALUETYPEARG value) {
+        MAP_KEYTYPEARG atKey = map.keys.at(index);
         return (atKey, map.values[atKey]);
     }
 
@@ -73,7 +76,7 @@ library $1 {
     // @dev Tries to returns the value associated with key. O(1).
     // Does not revert if key is not in the map.
     //
-    function safe_get(Map storage map, $3 key) internal view returns (bool exists, $5 value) {
+    function safe_get(Map storage map, MAP_KEYTYPEARG key) internal view returns (bool exists, MAP_VALUETYPEARG value) {
         return (contains(map, key), map.values[key]);
     }
 
@@ -84,12 +87,17 @@ library $1 {
     //
     // - key must be in the map.
     //
-    function get(Map storage map, $3 key) internal view returns ($5) {
+    function get(Map storage map, MAP_KEYTYPEARG key) internal view returns (MAP_VALUETYPEARG) {
         if (!contains(map, key)) {
             revert("Not existent");
         }
         return map.values[key];
     }
 }
-'')dnl
+'
+`popdef(`MAP_KEYTYPE')dnl'
+`popdef(`MAP_KEYTYPEARG')dnl'
+`popdef(`MAP_VALUETYPE')dnl'
+`popdef(`MAP_VALUETYPEARG')dnl'
+)dnl
 )dnl

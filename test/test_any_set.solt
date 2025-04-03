@@ -3,7 +3,8 @@ pragma solidity >= 0.5 < 0.9;
 pragma experimental ABIEncoderV2;
 
 include(solt/set.solt)
-SOLT_SET(SET_LIBRARY, SET_KEYTYPE, SET_KEYTYPEARG)
+SOLT_SET(SET_LIBRARY, SET_KEYTYPE)
+define(`SET_KEYTYPEARG', `SET_KEYTYPE IFVALUETYPE(SET_KEYTYPE, , memory)')dnl
 
 contract TESTNAME {
     using SET_LIBRARY for SET_LIBRARY.Set;

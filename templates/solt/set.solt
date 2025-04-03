@@ -1,11 +1,14 @@
 include(solt/base_solt.solt)dnl
-ifdef(__SET__, `',
+ifdef(`__SET__', `',
 define(`__SET__')dnl
-define( SOLT_SET, ``
+define(`SOLT_SET', ``
 // Solidity Templates Set library
 //
 // Initial version partially copied from MIT licensed OpenZeppelin Contracts
-
+''
+`pushdef(`SET_KEYTYPE', $2)dnl'
+`pushdef(`SET_KEYTYPEARG', `$2 IFVALUETYPE($2, , memory)')dnl'
+`
 library $1 {
     // The Set data structure.
     // 
@@ -21,13 +24,13 @@ library $1 {
         // 
         // values.length is an actual set size.
         //
-        $2[] values;
+        SET_KEYTYPE[] values;
         // Backreference from the key value to the index.
         // 
         // The index of the value in the values array plus 1.
         // The zero 0 position is used to mean a value is not in the set.
         //
-        mapping($2 => uint256) positions;
+        mapping(SET_KEYTYPE => uint256) positions;
     }
 
     // Add a value to a set. O(1).
@@ -35,7 +38,7 @@ library $1 {
     // Returns true if the value was added to the set, that is if it was not
     // already present.
     //
-    function add(Set storage self, $3 value) internal returns (bool) {
+    function add(Set storage self, SET_KEYTYPEARG value) internal returns (bool) {
         if (!contains(self, value)) {
             self.values.push(value);
             // The value is stored at length-1, but we add 1 to all indexes
@@ -52,7 +55,7 @@ library $1 {
     // Returns true if the value was removed from the set, that is if it was
     // present.
     //
-    function remove(Set storage self, $3 value) internal returns (bool) {
+    function remove(Set storage self, SET_KEYTYPEARG value) internal returns (bool) {
         // We cache the values position to prevent multiple reads from the same storage slot
         uint256 position = self.positions[value];
 
@@ -66,7 +69,7 @@ library $1 {
             uint256 lastIndex = self.values.length - 1;
 
             if (valueIndex != lastIndex) {
-                $3 lastValue = self.values[lastIndex];
+                SET_KEYTYPEARG lastValue = self.values[lastIndex];
 
                 // Move the lastValue to the index where the value to delete is
                 self.values[valueIndex] = lastValue;
@@ -88,7 +91,7 @@ library $1 {
 
     // Returns true if the value is in the set. O(1).
     //
-    function contains(Set storage self, $3 value) internal view returns (bool) {
+    function contains(Set storage self, SET_KEYTYPEARG value) internal view returns (bool) {
         return self.positions[value] != 0;
     }
 
@@ -100,10 +103,12 @@ library $1 {
 
     // Returns the value at the position. O(1).
     //
-    function at(Set storage self, uint256 position) internal view returns($3) {
+    function at(Set storage self, uint256 position) internal view returns(SET_KEYTYPEARG) {
         return self.values[position];
     }
 }
-''
+'
+`popdef(`SET_KEYTYPE')dnl'
+`popdef(`SET_KEYTYPEARG')dnl'
 )dnl
 )dnl

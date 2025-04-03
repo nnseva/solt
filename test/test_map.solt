@@ -4,13 +4,15 @@ pragma solidity >= 0.5 < 0.9;
 // Use the map library template
 include(solt/map.solt)
 
+include(solt/map.solt)
+
 struct MyContent {
     uint32 content;
     bool first;
 }
 
 // the map of MyContent
-SOLT_MAP(my_content_map,uint256,uint256,MyContent,MyContent memory)
+SOLT_MAP(`my_content_map',`uint256',`MyContent')
 
 contract ComplexMapTest {
     using my_content_map for my_content_map.Map;
