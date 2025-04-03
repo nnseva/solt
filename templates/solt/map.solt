@@ -1,0 +1,95 @@
+include(solt/set.solt)dnl
+ifdef(__MAP__, `',
+define(`__MAP__')
+// Solidity Templates Map library
+//
+// Initial version partially copied from MIT licensed OpenZeppelin Contracts
+
+define(SOLT_MAP,
+
+SOLT_SET($1_set, $2, $3)
+``
+library $1 {
+    using $1_set for $1_set.Set;
+    struct Map {
+        // Storage of keys
+        $1_set.Set keys;
+        // Storage of values
+        mapping($2 => $4) values;
+    }
+
+    //
+    // @dev Adds a key-value pair to a map, or updates the value for an existing
+    // key. O(1).
+    //
+    // Returns true if the key was added to the map, that is if it was not
+    // already present.
+    //
+    function set(Map storage map, $3 key, $5 value) internal returns (bool) {
+        map.values[key] = value;
+        return map.keys.add(key);
+    }
+
+    //
+    // @dev Removes a key-value pair from a map. O(1).
+    //
+    // Returns true if the key was removed from the map, that is if it was present.
+    //
+    function remove(Map storage map, $3 key) internal returns (bool) {
+        delete map.values[key];
+        return map.keys.remove(key);
+    }
+
+    //
+    // @dev Returns true if the key is in the map. O(1).
+    //
+    function contains(Map storage map, $3 key) internal view returns (bool) {
+        return map.keys.contains(key);
+    }
+
+    //
+    // @dev Returns the number of key-value pairs in the map. O(1).
+    //
+    function length(Map storage map) internal view returns (uint256) {
+        return map.keys.length();
+    }
+
+    //
+    // @dev Returns the key-value pair stored at position index in the map. O(1).
+    //
+    // Note that there are no guarantees on the ordering of entries inside the
+    // array, and it may change when more entries are added or removed.
+    //
+    // Requirements:
+    //
+    // - index must be strictly less than {length}.
+    //
+    function at(Map storage map, uint256 index) internal view returns ($3 key, $5 value) {
+        $3 atKey = map.keys.at(index);
+        return (atKey, map.values[atKey]);
+    }
+
+    //
+    // @dev Tries to returns the value associated with key. O(1).
+    // Does not revert if key is not in the map.
+    //
+    function safe_get(Map storage map, $3 key) internal view returns (bool exists, $5 value) {
+        return (contains(map, key), map.values[key]);
+    }
+
+    //
+    // @dev Returns the value associated with key. O(1).
+    //
+    // Requirements:
+    //
+    // - key must be in the map.
+    //
+    function get(Map storage map, $3 key) internal view returns ($5) {
+        if (!contains(map, key)) {
+            revert("Not existent");
+        }
+        return map.values[key];
+    }
+}
+'')dnl
+)dnl

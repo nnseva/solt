@@ -1,0 +1,46 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+
+// Use the map library template
+include(solt/map.solt)
+
+struct MyContent {
+    uint32 content;
+    bool first;
+}
+
+// the map of MyContent
+SOLT_MAP(my_content_map,uint256,uint256,MyContent,MyContent memory)
+
+contract ComplexMapTest {
+    using my_content_map for my_content_map.Map;
+    my_content_map.Map private my_map;
+    
+    function test_map_set() public {
+        {
+            my_map.set(1, MyContent(1, true));
+            my_map.set(5, MyContent(5, true));
+            my_map.set(18, MyContent(18, true));
+            my_map.set(32, MyContent(32, true));
+            my_map.set(11, MyContent(11, true));
+            my_map.set(1, MyContent(1, false));
+            my_map.set(18, MyContent(18, false));
+            my_map.set(32, MyContent(32, false));
+            require(my_map.length() == 5, "Length failed");
+            MyContent memory m;
+            m = my_map.get(1);
+            require(m.content == 1, "Content failed 1");
+            require(m.first == false, "Order failed 1");
+            m = my_map.get(5);
+            require(m.content == 5, "Content failed 5");
+            require(m.first == true, "Order failed 5");
+            bool exists;
+            (exists, m) = my_map.safe_get(11);
+            require(exists, "Safe get wrong");
+            require(m.content == 11, "Content failed 11");
+            require(m.first == true, "Order failed 11");
+            (exists, m) = my_map.safe_get(44);
+            require(!exists, "Safe get absent wrong");
+        }
+    }
+}

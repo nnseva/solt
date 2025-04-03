@@ -1,0 +1,109 @@
+include(solt/base_solt.solt)dnl
+ifdef(__SET__, `',
+define(`__SET__')dnl
+define( SOLT_SET, ``
+// Solidity Templates Set library
+//
+// Initial version partially copied from MIT licensed OpenZeppelin Contracts
+
+library $1 {
+    // The Set data structure.
+    // 
+    // The structure is used to store the Set in the storage.
+    // 
+    // Use this structure for the Set type f.e.:
+    //      using uint256_set for uint256_set.Set;
+    struct Set {
+        // Storage of the set keys.
+        // 
+        // You can inspect it any time to access and iterate
+        // the contents of the set in the readonly mode.
+        // 
+        // values.length is an actual set size.
+        //
+        $2[] values;
+        // Backreference from the key value to the index.
+        // 
+        // The index of the value in the values array plus 1.
+        // The zero 0 position is used to mean a value is not in the set.
+        //
+        mapping($2 => uint256) positions;
+    }
+
+    // Add a value to a set. O(1).
+    //
+    // Returns true if the value was added to the set, that is if it was not
+    // already present.
+    //
+    function add(Set storage self, $3 value) internal returns (bool) {
+        if (!contains(self, value)) {
+            self.values.push(value);
+            // The value is stored at length-1, but we add 1 to all indexes
+            // and use 0 as a sentinel value
+            self.positions[value] = self.values.length;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Removes a value from a set. O(1).
+    //
+    // Returns true if the value was removed from the set, that is if it was
+    // present.
+    //
+    function remove(Set storage self, $3 value) internal returns (bool) {
+        // We cache the values position to prevent multiple reads from the same storage slot
+        uint256 position = self.positions[value];
+
+        if (position != 0) {
+            // Equivalent to contains(self, value)
+            // To delete an element from the values array in O(1), we swap the element to delete with the last one in
+            // the array, and then remove the last element (sometimes called as swap and pop).
+            // This modifies the order of the array, as noted in {at}.
+
+            uint256 valueIndex = position - 1;
+            uint256 lastIndex = self.values.length - 1;
+
+            if (valueIndex != lastIndex) {
+                $3 lastValue = self.values[lastIndex];
+
+                // Move the lastValue to the index where the value to delete is
+                self.values[valueIndex] = lastValue;
+                // Update the tracked position of the lastValue (that was just moved)
+                self.positions[lastValue] = position;
+            }
+
+            // Delete the slot where the moved value was stored
+            self.values.pop();
+
+            // Delete the tracked position for the deleted slot
+            delete self.positions[value];
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Returns true if the value is in the set. O(1).
+    //
+    function contains(Set storage self, $3 value) internal view returns (bool) {
+        return self.positions[value] != 0;
+    }
+
+    // Returns length of the set. O(1).
+    //
+    function length(Set storage self) internal view returns(uint256) {
+        return self.values.length;
+    }
+
+    // Returns the value at the position. O(1).
+    //
+    function at(Set storage self, uint256 position) internal view returns($3) {
+        return self.values[position];
+    }
+}
+''
+)dnl
+)dnl

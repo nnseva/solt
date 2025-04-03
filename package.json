@@ -1,0 +1,39 @@
+{
+  "name": "solt",
+  "version": "0.0.1",
+  "description": "Solidity Templates allow using preprocessor to develop contracts",
+  "homepage": "https://github.com/nnseva/solt",
+  "bugs": "https://github.com/nnseva/solt/issues",
+  "keywords": [
+    "solidity",
+    "library",
+    "preprocessor",
+    "smart-contract"
+  ],
+  "author": {
+    "name": "Vsevolod Novikov",
+    "email": "nnseva@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Vsevolod Novikov",
+      "email": "nnseva@gmail.com"
+    }
+  ],
+  "files": [
+    "templates"
+  ],
+  "license": "LGPL-3.0-or-later",
+  "dependencies": {
+    "node": "^20.19.0"
+  },
+  "devDependencies": {
+    "@atixlabs/hardhat-time-n-mine": "^0.0.5",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "ethers": "^6.13.5"
+  },
+  "bin": {
+    "solt": "utils/solt.js"
+  }
+}

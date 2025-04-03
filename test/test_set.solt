@@ -1,0 +1,83 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+
+// Use the set library template
+include(solt/set.solt)
+// The second inclusion should be ignored
+include(solt/set.solt)
+// define the set of uint256
+SOLT_SET(uint256_set,uint256,uint256)
+
+contract SimpleSetTest {
+    using uint256_set for uint256_set.Set;
+    uint256_set.Set private uint256set;
+    
+    function test_add() public {
+        uint256set.add(1);
+        uint256set.add(5);
+        uint256set.add(18);
+        uint256set.add(32);
+        uint256set.add(11);
+        uint256set.add(1);
+        uint256set.add(18);
+        uint256set.add(32);
+        require(uint256set.length() == 5, "Length failed");
+        for(uint i=0; i < uint256set.length(); i++) {
+            require(
+                uint256set.positions[uint256set.at(i)] == i + 1,
+                "Position failed"
+            );
+        }
+        uint256[5] memory expected = [uint256(1), 5, 18, 32, 11];
+        for(uint i=0; i < expected.length; i++) {
+            require(
+                uint256set.contains(expected[i]),
+                "Contains expected failed"
+            );
+        }
+        uint256[4] memory unexpected = [uint256(2), 4, 44, 181];
+        for(uint i=0; i < unexpected.length; i++) {
+            require(
+                !uint256set.contains(unexpected[i]),
+                "Contains unexpected failed"
+            );
+        }
+    }
+
+    function test_add_remove_add() public {
+        uint256set.add(1);
+        uint256set.add(5);
+        uint256set.add(18);
+        uint256set.add(32);
+        uint256set.add(11);
+        uint256set.remove(5);
+        uint256set.remove(18);
+        uint256set.add(12);
+        require(uint256set.length() == 4, "Length failed");
+        for(uint i=0; i < uint256set.length(); i++) {
+            require(
+                uint256set.positions[uint256set.at(i)] == i + 1,
+                "Position failed"
+            );
+        }
+        uint256[4] memory expected = [uint256(1), 32, 11, 12];
+        for(uint i=0; i < expected.length; i++) {
+            require(
+                uint256set.contains(expected[i]),
+                "Contains expected failed"
+            );
+        }
+        uint256[4] memory unexpected = [uint256(5), 18, 44, 181];
+        for(uint i=0; i < unexpected.length; i++) {
+            require(
+                !uint256set.contains(unexpected[i]),
+                "Contains unexpected failed"
+            );
+        }
+    }
+
+    function values() public view returns(uint256[] memory) {
+        return uint256set.values;
+    }
+}
+

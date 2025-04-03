@@ -1,0 +1,14 @@
+ifdef(__BASE_SOLT__,`',
+define(`__BASE_SOLT__')dnl
+define(`TYPEBASE',`regexp($1,\([a-zA-Z]*\)\([0-9]*\), \1)') dnl
+define(`IFVALUETYPE',`dnl
+ifelse(
+        TYPEBASE($1),   bool, $2,
+        TYPEBASE($1),    int, $2,
+        TYPEBASE($1),   uint, $2,
+        TYPEBASE($1),  fixed, $2,
+        TYPEBASE($1), ufixed, $2,
+        TYPEBASE($1),address, $2,
+        $3)`'dnl
+')dnl
+)dnl

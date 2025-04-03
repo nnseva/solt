@@ -1,0 +1,41 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+pragma experimental ABIEncoderV2;
+
+include(solt/set.solt)
+SOLT_SET(SET_LIBRARY, SET_KEYTYPE, SET_KEYTYPEARG)
+
+contract TESTNAME {
+    using SET_LIBRARY for SET_LIBRARY.Set;
+    SET_LIBRARY.Set private _set;
+
+    function add(SET_KEYTYPEARG key) public {
+        _set.add(key);
+    }
+
+    function remove(SET_KEYTYPEARG key) public {
+        _set.remove(key);
+    }
+
+    function contains(SET_KEYTYPEARG key) public view returns(bool) {
+        return _set.contains(key);
+    }
+
+    function length() public view returns(uint256) {
+        return _set.length();
+    }
+
+    function at(uint256 index) public view returns(SET_KEYTYPEARG) {
+        return _set.at(index);
+    }
+    
+    function values() public view returns(SET_KEYTYPE[] memory) {
+        return _set.values;
+    }
+    function cleanup() public {
+        SET_KEYTYPE[] memory _values = values();
+        for(uint256 i=0; i < _values.length; i++) {
+            _set.remove(_values[i]);
+        }
+    }
+}
