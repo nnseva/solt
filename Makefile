@@ -1,6 +1,6 @@
-include ./make/solt.mk
-
 .PHONY: all precompile compile test clean single_test uint_test bytes_test string_test address_test set_test
+
+PP=npx solt pp --stderr
 
 SOURCES=test/test_set.solt test/test_map.solt
 
@@ -26,10 +26,10 @@ contracts/%.sol: test/%.solt templates/solt/set.solt templates/solt/map.solt
 	$(PP) $< >$@
 
 $(SET_CONTRACTS): test/test_any_set.solt templates/solt/set.solt
-	$(PP) -DSET_LIBRARY=$(basename $(notdir $@))_lib -DTESTNAME=$(basename $(notdir $@)) -DSET_KEYTYPE=$(subst _set,,$(basename $(notdir $@))) $< >$@
+	$(PP) -D SET_LIBRARY=$(basename $(notdir $@))_lib -D TESTNAME=$(basename $(notdir $@)) -D SET_KEYTYPE=$(subst _set,,$(basename $(notdir $@))) $< >$@
 
 $(MAP_CONTRACTS): test/test_any_map.solt templates/solt/map.solt
-	$(PP) -DMAP_LIBRARY=$(basename $(notdir $@))_lib -DTESTNAME=$(basename $(notdir $@)) -DMAP_KEYTYPE=$(word 1, $(subst _, ,$(basename $(notdir $@)))) -DMAP_VALUETYPE=$(word 2, $(subst _, ,$(basename $(notdir $@)))) $< >$@
+	$(PP) -D MAP_LIBRARY=$(basename $(notdir $@))_lib -D TESTNAME=$(basename $(notdir $@)) -D MAP_KEYTYPE=$(word 1, $(subst _, ,$(basename $(notdir $@)))) -D MAP_VALUETYPE=$(word 2, $(subst _, ,$(basename $(notdir $@)))) $< >$@
 
 test: compile single_test set_test uint_test bytes_test string_test address_test
 

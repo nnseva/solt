@@ -21,10 +21,13 @@
     }
   ],
   "files": [
-    "templates"
+    "templates",
+    "package.json"
   ],
   "license": "LGPL-3.0-or-later",
   "dependencies": {
+    "argparse": "^2.0.1",
+    "ejs": "^3.1.10",
     "node": "^20.19.0"
   },
   "devDependencies": {

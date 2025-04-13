@@ -1,0 +1,32 @@
+<%
+is_valuetype = function(name) {
+    // The function returns true if the name is a valuetype
+    // not requiring storage modifier
+    return !!name.match(/(u?(int|fixed)\d*)|bool|address|bytes\d+/)
+}
+argtype = function(name) {
+    // the function returns argument type for the type name
+    // when applied to the argument list, return list,
+    // or variable definition
+    if(is_valuetype(name)) return name;
+    return `${name} memory`;
+}
+include_with = function(name, args) {
+    var save = {};
+    for(var k in args) {
+        if(k in locals) {
+            save[k] = locals[k]; 
+        }
+        locals[k] = args[k];
+    }
+    ret = include(name);
+    for(var k in args) {
+        if(k in save) {
+            locals[k] = save[k]; 
+        } else {
+            delete locals[k];
+        }
+    }
+    return ret;
+}
+-%>

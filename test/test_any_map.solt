@@ -1,25 +1,24 @@
 /// SPDX-License-Identifier: LGPL3
 pragma solidity >= 0.5 < 0.9;
 pragma experimental ABIEncoderV2;
+<%- include('solt/std.solt') -%>
+<%- include('solt/map.solt') -%>
+<% MAP_KEYTYPEARG = argtype(MAP_KEYTYPE) -%>
+<% MAP_VALUETYPEARG = argtype(MAP_VALUETYPE) -%>
 
-include(solt/map.solt)
-SOLT_MAP(MAP_LIBRARY, MAP_KEYTYPE, MAP_VALUETYPE)
-define(`MAP_KEYTYPEARG', `MAP_KEYTYPE IFVALUETYPE(MAP_KEYTYPE, , memory)')dnl
-define(`MAP_VALUETYPEARG', `MAP_VALUETYPE IFVALUETYPE(MAP_VALUETYPE, , memory)')dnl
+contract <%- TESTNAME -%> {
+    using <%- MAP_LIBRARY -%> for <%- MAP_LIBRARY -%>.Map;
+    <%- MAP_LIBRARY -%>.Map private _map;
 
-contract TESTNAME {
-    using MAP_LIBRARY for MAP_LIBRARY.Map;
-    MAP_LIBRARY.Map private _map;
-
-    function set(MAP_KEYTYPEARG key, MAP_VALUETYPEARG value) public {
+    function set(<%- MAP_KEYTYPEARG -%> key, <%- MAP_VALUETYPEARG -%> value) public {
         _map.set(key, value);
     }
 
-    function remove(MAP_KEYTYPEARG key) public {
+    function remove(<%- MAP_KEYTYPEARG -%> key) public {
         _map.remove(key);
     }
 
-    function contains(MAP_KEYTYPEARG key) public view returns(bool) {
+    function contains(<%- MAP_KEYTYPEARG -%> key) public view returns(bool) {
         return _map.contains(key);
     }
 
@@ -27,31 +26,31 @@ contract TESTNAME {
         return _map.length();
     }
 
-    function at(uint256 index) public view returns(MAP_KEYTYPEARG, MAP_VALUETYPEARG) {
+    function at(uint256 index) public view returns(<%- MAP_KEYTYPEARG -%>, <%- MAP_VALUETYPEARG -%>) {
         return _map.at(index);
     }
 
-    function get(MAP_KEYTYPEARG key) public view returns(MAP_VALUETYPEARG) {
+    function get(<%- MAP_KEYTYPEARG -%> key) public view returns(<%- MAP_VALUETYPEARG -%>) {
         return _map.get(key);
     }
 
-    function safe_get(MAP_KEYTYPEARG key) public view returns(bool exists, MAP_VALUETYPEARG value) {
+    function safe_get(<%- MAP_KEYTYPEARG -%> key) public view returns(bool exists, <%- MAP_VALUETYPEARG -%> value) {
         return _map.safe_get(key);
     }
     
-    function keys() public view returns(MAP_KEYTYPE[] memory) {
+    function keys() public view returns(<%- MAP_KEYTYPE -%>[] memory) {
         return _map.keys.values;
     }
 
-    function values() public view returns(MAP_VALUETYPE[] memory) {
-        MAP_VALUETYPE[] memory ret = new MAP_VALUETYPE[](_map.keys.values.length);
+    function values() public view returns(<%- MAP_VALUETYPE -%>[] memory) {
+        <%- MAP_VALUETYPE -%>[] memory ret = new <%- MAP_VALUETYPE -%>[](_map.keys.values.length);
         for(uint256 i=0; i < _map.keys.values.length; i++) {
             ret[i] = _map.values[_map.keys.values[i]];
         }
         return ret;
     }
     function cleanup() public {
-        MAP_KEYTYPE[] memory _keys = keys();
+        <%- MAP_KEYTYPE -%>[] memory _keys = keys();
         for(uint256 i=0; i < _keys.length; i++) {
             _map.remove(_keys[i]);
         }
