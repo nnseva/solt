@@ -1,3 +1,5 @@
+[![Tests](https://github.com/nnseva/solt/actions/workflows/test.yml/badge.svg)](https://github.com/nnseva/solt/actions/workflows/test.yml)
+
 # Solidity Templates
 
 The `solt` package provides utilities for working with _type-agnostic_, customizable Solidity templates within your smart contracts.

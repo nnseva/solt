@@ -136,7 +136,7 @@ describe("Typed Random Set Test", accounts => {
     ];
     for(var valuetype of new Set(types)) {
         ((valuetype) => {
-            it(`Test ${valuetype.name=="bytes"?"any":""}${valuetype.name} set`, async () => {
+            it(`Test ${valuetype.name} set`, async () => {
                 var contract = await hre.ethers.deployContract(`${valuetype.name}_set`);
                 var set = new Set();
                 for(var i=0; i < 1000; i++) {

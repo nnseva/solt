@@ -157,7 +157,7 @@ describe("Typed Random Map Test", accounts => {
     for(var keytype of new Set(types)) {
         for(var valuetype of new Set(types)) {
             ((keytype, valuetype) => {
-                it(`Test ${keytype.name=="bytes"?"any":""}${keytype.name} => ${valuetype.name=="bytes"?"any":""}${valuetype.name} map`, async () => {
+                it(`Test ${keytype.name} => ${valuetype.name} map`, async () => {
                     var contract = await hre.ethers.deployContract(`${keytype.name}_${valuetype.name}_map`);
                     var map = new Map();
                     for(var i=0; i < 1000; i++) {

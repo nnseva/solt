@@ -39,10 +39,10 @@ single_test: compile
 	npx hardhat test --grep Single
 
 set_test: compile
-	for i in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "Test ${DOLLAR}i set"; done
+	for i in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "${DOLLAR}i set"; done
 
 map_test: compile
-	for i in $(SOME_BUILTIN_TYPES); do for j in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "${DOLLAR}i => ${DOLLAR}j"; done; done
+	for i in $(SOME_BUILTIN_TYPES); do for j in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "${DOLLAR}i => ${DOLLAR}j map"; done; done
 
 clean:
 	+rm -r contracts/*
