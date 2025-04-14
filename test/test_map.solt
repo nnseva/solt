@@ -4,16 +4,18 @@ pragma solidity >= 0.5 < 0.9;
 
 // Use the map library template
 
-struct MyContent {
-    uint32 content;
-    bool first;
+library MyLib {
+    struct MyContent {
+        uint32 content;
+        bool first;
+    }
 }
 
 // the map of MyContent
 <%- include_with('solt/map.solt', {
     MAP_LIBRARY: 'my_content_map',
     MAP_KEYTYPE: 'uint256',
-    MAP_VALUETYPE: 'MyContent'
+    MAP_VALUETYPE: 'MyLib.MyContent'
 }) -%>
 
 contract ComplexMapTest {
@@ -22,16 +24,16 @@ contract ComplexMapTest {
     
     function test_map_set() public {
         {
-            my_map.set(1, MyContent(1, true));
-            my_map.set(5, MyContent(5, true));
-            my_map.set(18, MyContent(18, true));
-            my_map.set(32, MyContent(32, true));
-            my_map.set(11, MyContent(11, true));
-            my_map.set(1, MyContent(1, false));
-            my_map.set(18, MyContent(18, false));
-            my_map.set(32, MyContent(32, false));
+            my_map.set(1, MyLib.MyContent(1, true));
+            my_map.set(5, MyLib.MyContent(5, true));
+            my_map.set(18, MyLib.MyContent(18, true));
+            my_map.set(32, MyLib.MyContent(32, true));
+            my_map.set(11, MyLib.MyContent(11, true));
+            my_map.set(1, MyLib.MyContent(1, false));
+            my_map.set(18, MyLib.MyContent(18, false));
+            my_map.set(32, MyLib.MyContent(32, false));
             require(my_map.length() == 5, "Length failed");
-            MyContent memory m;
+            MyLib.MyContent memory m;
             m = my_map.get(1);
             require(m.content == 1, "Content failed 1");
             require(m.first == false, "Order failed 1");

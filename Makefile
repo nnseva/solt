@@ -1,4 +1,4 @@
-.PHONY: all precompile compile test clean single_test uint_test bytes_test string_test address_test set_test
+.PHONY: all precompile compile test clean single_test set_test map_test
 
 PP=npx solt pp --stderr
 
@@ -11,6 +11,8 @@ SOME_BUILTIN_TYPES=uint32 uint200 bytes4 bytes16 address bytes string
 SET_CONTRACTS=$(foreach tname, $(SOME_BUILTIN_TYPES), contracts/$(tname)_set.sol)
 
 MAP_CONTRACTS=$(foreach kname, $(SOME_BUILTIN_TYPES), $(foreach vname, $(SOME_BUILTIN_TYPES), contracts/$(kname)_$(vname)_map.sol))
+
+DOLLAR=$
 
 all: precompile compile test
 
@@ -31,25 +33,16 @@ $(SET_CONTRACTS): test/test_any_set.solt templates/solt/set.solt
 $(MAP_CONTRACTS): test/test_any_map.solt templates/solt/map.solt
 	$(PP) -D MAP_LIBRARY=$(basename $(notdir $@))_lib -D TESTNAME=$(basename $(notdir $@)) -D MAP_KEYTYPE=$(word 1, $(subst _, ,$(basename $(notdir $@)))) -D MAP_VALUETYPE=$(word 2, $(subst _, ,$(basename $(notdir $@)))) $< >$@
 
-test: compile single_test set_test uint_test bytes_test string_test address_test
+test: compile single_test set_test map_test
 
 single_test: compile
 	npx hardhat test --grep Single
 
 set_test: compile
-	npx hardhat test --grep "Typed Random Set Test"
+	for i in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "Test ${DOLLAR}i set"; done
 
-uint_test: compile
-	npx hardhat test --grep "uint.*=>"
-
-bytes_test: compile
-	npx hardhat test --grep "bytes.*=>"
-
-string_test: compile
-	npx hardhat test --grep "string.*=>"
-
-address_test: compile
-	npx hardhat test --grep "address.*=>"
+map_test: compile
+	for i in $(SOME_BUILTIN_TYPES); do for j in $(SOME_BUILTIN_TYPES); do npx hardhat test --grep "${DOLLAR}i => ${DOLLAR}j"; done; done
 
 clean:
 	+rm -r contracts/*
