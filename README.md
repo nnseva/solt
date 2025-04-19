@@ -335,7 +335,7 @@ The predefined `include` directive allows inserting the processed code from an i
 <%- include('solt/std.solt') -%>
 ```
 
-The preprocessor searches for included templates within the templates path, as explained in the [Template Search Path](#template_search_path) section.
+The preprocessor searches for included templates within the templates path, as explained in the [Template Search Path](#template-search-path) section.
 
 The `solt/std.solt` template introduces an additional directive, `include_with`, which allows redefining variables specifically for the included template:
 
@@ -379,7 +379,7 @@ Additionally, the following sequences allow literal output of bracket characters
 
 The `solt/std.solt` template extends preprocessing capabilities by introducing additional directives and functions, including:
 
-- `<%- include_with(name, { varname1: value1, varname2: value2, ...}) -%>` Includes the template `name` while locally redefining variables. See [Include directives](#include_directives) for details.
+- `<%- include_with(name, { varname1: value1, varname2: value2, ...}) -%>` Includes the template `name` while locally redefining variables. See [Include directives](#include-directives) for details.
 - `<%- is_valuetype(name) -%>` Solidity-specific function that determines whether the type specified in `name` is a value type. Returns `true` for types like `uint256` or `bytes16` and `false` for types like `string` or `bytes`. This function can also be used in scriptlets as `is_valuetype(name)` for type-checking.
 - `<%- argtype(name) -%>` Solidity-specific function that applies `is_valuetype()` to determine the appropriate type for function arguments, return values, or local variables.
     - Returns the type unchanged for value types (`uint256` → `uint256`).
