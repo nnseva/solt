@@ -1,7 +1,14 @@
-<%- include('solt/std.solt') -%>
+// ----------------------------------------------------------------------------
 // Solidity Templates Map library
 //
-// Initial version partially copied from MIT licensed OpenZeppelin Contracts
+// Copyright (c) 2025 nnseva LGPL 3.0
+//
+// Initial version has been based on
+// OpenZeppelin Contracts
+// Copyright (c) 2016-2025 Zeppelin Group Ltd MIT
+// https://github.com/OpenZeppelin/openzeppelin-contracts
+// ----------------------------------------------------------------------------
+<%- include('solt/std.solt') -%>
 <%- include_with('solt/set.solt', {
     SET_LIBRARY: `${MAP_LIBRARY}_set`,
     SET_KEYTYPE: MAP_KEYTYPE,

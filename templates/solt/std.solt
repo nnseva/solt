@@ -1,3 +1,8 @@
+// ----------------------------------------------------------------------------
+// Solidity Templates Std library
+//
+// Copyright (c) 2025 nnseva LGPL 3.0
+// ----------------------------------------------------------------------------
 <%
 is_valuetype = function(name) {
     // The function returns true if the name is a valuetype
