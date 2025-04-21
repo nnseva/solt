@@ -1,0 +1,104 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+<%- include('solt/std.solt') -%>
+// define the indirect index of address
+<%- include_with('solt/index_indirect.solt', {
+    INDIRECT_LIBRARY: 'address_direct',
+    INDIRECT_KEYTYPE: 'address'
+}) -%>
+import "hardhat/console.sol";
+contract SimpleIndirectTest {
+    using address_direct for address_direct.Index;
+    address_direct.Index private addressindex;
+    
+    function test_add() public {
+        addressindex.add(address(uint160(1)));
+        addressindex.add(address(uint160(5)));
+        addressindex.add(address(uint160(18)));
+        addressindex.add(address(uint160(32)));
+        addressindex.add(address(uint160(11)));
+        addressindex.add(address(uint160(1)));
+        addressindex.add(address(uint160(18)));
+        addressindex.add(address(uint160(32)));
+        uint size=0;
+        address[5] memory expected = [
+            address(uint160(1)),
+            address(uint160(5)),
+            address(uint160(11)),
+            address(uint160(18)),
+            address(uint160(32))
+        ];
+        for(address i=addressindex.first(); i != address(uint160(0)); i=addressindex.next(i)) {
+            require(addressindex.contains(i));
+            require(i == expected[size]);
+            size += 1;
+        }
+        require(
+            size == 5,
+            "Wrong size"
+        );
+        for(uint i=0; i < expected.length; i++) {
+            require(
+                addressindex.contains(expected[i]),
+                "Contains expected failed"
+            );
+        }
+        address[4] memory unexpected = [
+            address(uint160(2)),
+            address(uint160(4)),
+            address(uint160(44)),
+            address(uint160(181))
+        ];
+        for(uint i=0; i < unexpected.length; i++) {
+            require(
+                !addressindex.contains(unexpected[i]),
+                "Contains unexpected failed"
+            );
+        }
+    }
+
+    function test_add_remove_add() public {
+        addressindex.add(address(uint160(1)));
+        addressindex.add(address(uint160(5)));
+        addressindex.add(address(uint160(18)));
+        addressindex.add(address(uint160(32)));
+        addressindex.add(address(uint160(11)));
+        addressindex.remove(address(uint160(5)));
+        addressindex.remove(address(uint160(18)));
+        addressindex.add(address(uint160(12)));
+        uint size=0;
+        address[4] memory expected = [
+            address(uint160(1)),
+            address(uint160(11)),
+            address(uint160(12)),
+            address(uint160(32))
+        ];
+        for(address i=addressindex.first(); i != address(uint160(0)); i=addressindex.next(i)) {
+            require(addressindex.contains(i));
+            require(i == expected[size]);
+            size += 1;
+        }
+        require(
+            size == 4,
+            "Wrong size"
+        );
+        for(uint i=0; i < expected.length; i++) {
+            require(
+                addressindex.contains(expected[i]),
+                "Contains expected failed"
+            );
+        }
+        address[4] memory unexpected = [
+            address(uint160(5)),
+            address(uint160(18)),
+            address(uint160(44)),
+            address(uint160(181))
+        ];
+        for(uint i=0; i < unexpected.length; i++) {
+            require(
+                !addressindex.contains(unexpected[i]),
+                "Contains unexpected failed"
+            );
+        }
+    }
+}

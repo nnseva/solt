@@ -1,0 +1,391 @@
+// ----------------------------------------------------------------------------
+// Solidity Templates Indirect Index library
+//
+// Copyright (c) 2025 nnseva LGPL 3.0
+//
+// Initial version has been based on
+// BokkyPooBah's Red-Black Tree Library
+// Copyright (c) BokkyPooBah / Bok Consulting Pty Ltd 2020. The MIT Licence.
+// https://github.com/bokkypoobah/BokkyPooBahsRedBlackTreeLibrary
+// ----------------------------------------------------------------------------
+<%- include('solt/std.solt') -%>
+library <%- INDIRECT_LIBRARY -%> {
+    struct Node {
+        uint parent;
+        uint left;
+        uint right;
+        <%- INDIRECT_KEYTYPE -%> key;
+        bool red;
+    }
+
+    struct Index {
+        uint root;
+        uint latest;
+        // TODO probably we can use array here
+        mapping(uint => Node) nodes;
+        // TODO probably we don't need it because of the tree
+        mapping(<%- INDIRECT_KEYTYPE -%> => uint) ids;
+    }
+
+    uint private constant EMPTY = 0;
+
+    function get_key(Index storage self, uint id) internal view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        // Returns the key by ID
+        return self.nodes[id].key;
+    }
+
+    function get_id(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal view returns (uint) {
+        // Returns the ID by key
+        return self.ids[key];
+    }
+
+    function is_empty(Index storage self) internal view returns (bool) {
+        // Returns if the index is empty. Check before first/last request
+        return self.root == EMPTY;
+    }
+
+    function first_id(Index storage self) internal view returns (uint) {
+        // Returns the first ID in the order or 0
+        uint id = self.root;
+        if (id != EMPTY) {
+            while (self.nodes[id].left != EMPTY) {
+                id = self.nodes[id].left;
+            }
+        }
+        return id;
+    }
+    function first(Index storage self) internal view returns (<%- argtype(INDIRECT_KEYTYPE) -%> key) {
+        // Returns the first (lowest) key
+        // Check is_empty() before the call
+        return get_key(self, first_id(self));
+    }
+
+    function last_id(Index storage self) internal view returns (uint) {
+        // Returns the last ID in the order or 0
+        uint id = self.root;
+        if (id != EMPTY) {
+            while (self.nodes[id].right != EMPTY) {
+                id = self.nodes[id].right;
+            }
+        }
+        return id;
+    }
+    function last(Index storage self) internal view returns (<%- argtype(INDIRECT_KEYTYPE) -%> key) {
+        // Returns the last (highest) key
+        // Check is_empty() before the call
+        return get_key(self, last_id(self));
+    }
+
+    function next_id(Index storage self, uint id) internal view returns (uint) {
+        // Returns the next ID in the order or 0
+        uint cursor = 0;
+        if(id != EMPTY) {
+            if (self.nodes[id].right != EMPTY) {
+                cursor = treeMinimum(self, self.nodes[id].right);
+            } else {
+                cursor = self.nodes[id].parent;
+                while (cursor != EMPTY && id == self.nodes[cursor].right) {
+                    id = cursor;
+                    cursor = self.nodes[cursor].parent;
+                }
+            }
+        }
+        return cursor;
+    }
+    function next(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        // Returns the next (lowest higher) key
+        // Check contains() before the call
+        return get_key(self, next_id(self, get_id(self, key)));
+    }
+
+    function prev_id(Index storage self, uint id) internal view returns (uint) {
+        // Returns the prev ID in the order or 0
+        uint cursor = 0;
+        if(id != EMPTY) {
+            if (self.nodes[id].left != EMPTY) {
+                cursor = treeMaximum(self, self.nodes[id].left);
+            } else {
+                cursor = self.nodes[id].parent;
+                while (cursor != EMPTY && id == self.nodes[cursor].left) {
+                    id = cursor;
+                    cursor = self.nodes[cursor].parent;
+                }
+            }
+        }
+        return cursor;
+    }
+    function prev(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        // Returns the prev (highest lower) key
+        // Check contains() before the call
+        return get_key(self, prev_id(self, get_id(self, key)));
+    }
+
+    function contains(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal view returns (bool) {
+        // Returns, whether the key is in the index
+        return contains_id(self, get_id(self, key));
+    }
+    function contains_id(Index storage self, uint id) internal view returns (bool) {
+        // Returns, whether the ID is in the index
+        return (id != EMPTY) && ((id == self.root) || (self.nodes[id].parent != EMPTY));
+    }
+    function is_less(
+        <%- argtype(INDIRECT_KEYTYPE) -%> key1,
+        <%- argtype(INDIRECT_KEYTYPE) -%> key2
+    ) internal pure returns(bool) {
+        // Templated comparator for keys
+        <%-
+            (function() {
+                if( typeof(INDIRECT_KEYCOMPARE) == 'undefined' ) {
+                    return 'return key1 < key2;';
+                } else {
+                    return INDIRECT_KEYCOMPARE;
+                }
+            })();
+        %>
+    }
+    function add(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal returns (bool) {
+        // Adds the key to the index
+        // returns true if added, or false if already present
+        if(contains(self, key))
+            return false;
+        self.latest += 1; // new ID
+        uint cursor = EMPTY;
+        uint probe = self.root;
+        while (probe != EMPTY) {
+            cursor = probe;
+            if (is_less(key, get_key(self, probe))) {
+                probe = self.nodes[probe].left;
+            } else {
+                probe = self.nodes[probe].right;
+            }
+        }
+        self.nodes[self.latest] = Node({parent: cursor, left: EMPTY, right: EMPTY, key: key, red: true});
+        self.ids[key] = self.latest;
+        if (cursor == EMPTY) {
+            self.root = self.latest;
+        } else if (is_less(key, get_key(self, cursor))) {
+            self.nodes[cursor].left = self.latest;
+        } else {
+            self.nodes[cursor].right = self.latest;
+        }
+        insertFixup(self, self.latest);
+        return true;
+    }
+
+    function remove(Index storage self, <%- INDIRECT_KEYTYPE -%> key) internal returns (bool) {
+        // Removes the key from the index
+        // returns true if removed, or false if not present
+        if(!contains(self, key))
+            return false;
+        uint probe;
+        uint cursor;
+        uint key_id = get_id(self, key);
+        if (self.nodes[key_id].left == EMPTY || self.nodes[key_id].right == EMPTY) {
+            cursor = key_id;
+        } else {
+            cursor = self.nodes[key_id].right;
+            while (self.nodes[cursor].left != EMPTY) {
+                cursor = self.nodes[cursor].left;
+            }
+        }
+        if (self.nodes[cursor].left != EMPTY) {
+            probe = self.nodes[cursor].left;
+        } else {
+            probe = self.nodes[cursor].right;
+        }
+        uint yParent = self.nodes[cursor].parent;
+        self.nodes[probe].parent = yParent;
+        if (yParent != EMPTY) {
+            if (cursor == self.nodes[yParent].left) {
+                self.nodes[yParent].left = probe;
+            } else {
+                self.nodes[yParent].right = probe;
+            }
+        } else {
+            self.root = probe;
+        }
+        bool doFixup = !self.nodes[cursor].red;
+        if (cursor != key_id) {
+            replaceParent(self, cursor, key_id);
+            self.nodes[cursor].left = self.nodes[key_id].left;
+            self.nodes[self.nodes[cursor].left].parent = cursor;
+            self.nodes[cursor].right = self.nodes[key_id].right;
+            self.nodes[self.nodes[cursor].right].parent = cursor;
+            self.nodes[cursor].red = self.nodes[key_id].red;
+            //(cursor, key_id) = (key_id, cursor);
+        }
+        if (doFixup) {
+            removeFixup(self, probe);
+        }
+        delete self.nodes[key_id];
+        delete self.ids[key];
+        return true;
+    }
+
+    // Private implementation functions
+
+    function treeMinimum(Index storage self, uint id) private view returns (uint) {
+        while (self.nodes[id].left != EMPTY) {
+            id = self.nodes[id].left;
+        }
+        return id;
+    }
+    function treeMaximum(Index storage self, uint id) private view returns (uint) {
+        while (self.nodes[id].right != EMPTY) {
+            id = self.nodes[id].right;
+        }
+        return id;
+    }
+
+    function rotateLeft(Index storage self, uint id) private {
+        uint cursor = self.nodes[id].right;
+        uint idParent = self.nodes[id].parent;
+        uint cursorLeft = self.nodes[cursor].left;
+        self.nodes[id].right = cursorLeft;
+        if (cursorLeft != EMPTY) {
+            self.nodes[cursorLeft].parent = id;
+        }
+        self.nodes[cursor].parent = idParent;
+        if (idParent == EMPTY) {
+            self.root = cursor;
+        } else if (id == self.nodes[idParent].left) {
+            self.nodes[idParent].left = cursor;
+        } else {
+            self.nodes[idParent].right = cursor;
+        }
+        self.nodes[cursor].left = id;
+        self.nodes[id].parent = cursor;
+    }
+    function rotateRight(Index storage self,uint id) private {
+        uint cursor = self.nodes[id].left;
+        uint idParent = self.nodes[id].parent;
+        uint cursorRight = self.nodes[cursor].right;
+        self.nodes[id].left = cursorRight;
+        if (cursorRight != EMPTY) {
+            self.nodes[cursorRight].parent = id;
+        }
+        self.nodes[cursor].parent = idParent;
+        if (idParent == EMPTY) {
+            self.root = cursor;
+        } else if (id == self.nodes[idParent].right) {
+            self.nodes[idParent].right = cursor;
+        } else {
+            self.nodes[idParent].left = cursor;
+        }
+        self.nodes[cursor].right = id;
+        self.nodes[id].parent = cursor;
+    }
+
+    function insertFixup(Index storage self,uint id) private {
+        uint cursor;
+        while (id != self.root && self.nodes[self.nodes[id].parent].red) {
+            uint idParent = self.nodes[id].parent;
+            if (idParent == self.nodes[self.nodes[idParent].parent].left) {
+                cursor = self.nodes[self.nodes[idParent].parent].right;
+                if (self.nodes[cursor].red) {
+                    self.nodes[idParent].red = false;
+                    self.nodes[cursor].red = false;
+                    self.nodes[self.nodes[idParent].parent].red = true;
+                    id = self.nodes[idParent].parent;
+                } else {
+                    if (id == self.nodes[idParent].right) {
+                      id = idParent;
+                      rotateLeft(self, id);
+                    }
+                    idParent = self.nodes[id].parent;
+                    self.nodes[idParent].red = false;
+                    self.nodes[self.nodes[idParent].parent].red = true;
+                    rotateRight(self, self.nodes[idParent].parent);
+                }
+            } else {
+                cursor = self.nodes[self.nodes[idParent].parent].left;
+                if (self.nodes[cursor].red) {
+                    self.nodes[idParent].red = false;
+                    self.nodes[cursor].red = false;
+                    self.nodes[self.nodes[idParent].parent].red = true;
+                    id = self.nodes[idParent].parent;
+                } else {
+                    if (id == self.nodes[idParent].left) {
+                      id = idParent;
+                      rotateRight(self, id);
+                    }
+                    idParent = self.nodes[id].parent;
+                    self.nodes[idParent].red = false;
+                    self.nodes[self.nodes[idParent].parent].red = true;
+                    rotateLeft(self, self.nodes[idParent].parent);
+                }
+            }
+        }
+        self.nodes[self.root].red = false;
+    }
+
+    function replaceParent(Index storage self,uint a,uint b) private {
+        uint bParent = self.nodes[b].parent;
+        self.nodes[a].parent = bParent;
+        if (bParent == EMPTY) {
+            self.root = a;
+        } else {
+            if (b == self.nodes[bParent].left) {
+                self.nodes[bParent].left = a;
+            } else {
+                self.nodes[bParent].right = a;
+            }
+        }
+    }
+    function removeFixup(Index storage self,uint id) private {
+        uint cursor;
+        while (id != self.root && !self.nodes[id].red) {
+            uint idParent = self.nodes[id].parent;
+            if (id == self.nodes[idParent].left) {
+                cursor = self.nodes[idParent].right;
+                if (self.nodes[cursor].red) {
+                    self.nodes[cursor].red = false;
+                    self.nodes[idParent].red = true;
+                    rotateLeft(self, idParent);
+                    cursor = self.nodes[idParent].right;
+                }
+                if (!self.nodes[self.nodes[cursor].left].red && !self.nodes[self.nodes[cursor].right].red) {
+                    self.nodes[cursor].red = true;
+                    id = idParent;
+                } else {
+                    if (!self.nodes[self.nodes[cursor].right].red) {
+                        self.nodes[self.nodes[cursor].left].red = false;
+                        self.nodes[cursor].red = true;
+                        rotateRight(self, cursor);
+                        cursor = self.nodes[idParent].right;
+                    }
+                    self.nodes[cursor].red = self.nodes[idParent].red;
+                    self.nodes[idParent].red = false;
+                    self.nodes[self.nodes[cursor].right].red = false;
+                    rotateLeft(self, idParent);
+                    id = self.root;
+                }
+            } else {
+                cursor = self.nodes[idParent].left;
+                if (self.nodes[cursor].red) {
+                    self.nodes[cursor].red = false;
+                    self.nodes[idParent].red = true;
+                    rotateRight(self, idParent);
+                    cursor = self.nodes[idParent].left;
+                }
+                if (!self.nodes[self.nodes[cursor].right].red && !self.nodes[self.nodes[cursor].left].red) {
+                    self.nodes[cursor].red = true;
+                    id = idParent;
+                } else {
+                    if (!self.nodes[self.nodes[cursor].left].red) {
+                        self.nodes[self.nodes[cursor].right].red = false;
+                        self.nodes[cursor].red = true;
+                        rotateLeft(self, cursor);
+                        cursor = self.nodes[idParent].left;
+                    }
+                    self.nodes[cursor].red = self.nodes[idParent].red;
+                    self.nodes[idParent].red = false;
+                    self.nodes[self.nodes[cursor].left].red = false;
+                    rotateRight(self, idParent);
+                    id = self.root;
+                }
+            }
+        }
+        self.nodes[id].red = false;
+    }
+}

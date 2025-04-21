@@ -101,7 +101,7 @@ A Solidity Template file uses the `.solt` extension and can be included in your 
 Preprocessor variables can be introduced within an included template file or passed via the command line. These variables can then be used anywhere in your code, like this:
 
 ```
-    mapping< <%- MAP_KEYTYPE -%> => <%- MAP_VALUETYPE -%> > my_map;
+    mapping(<%- MAP_KEYTYPE -%> => <%- MAP_VALUETYPE -%>) my_map;
 ```
 
 

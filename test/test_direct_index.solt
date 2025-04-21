@@ -1,26 +1,29 @@
 /// SPDX-License-Identifier: LGPL3
 pragma solidity >= 0.5 < 0.9;
 <%- include('solt/std.solt') -%>
-// define the sorted set of uint256
+// define the direct index of uint256
 <%- include_with('solt/index_direct.solt', {
-    DIRECT_LIBRARY: 'uint256_sorted',
+    DIRECT_LIBRARY: 'uint256_direct',
     DIRECT_KEYTYPE: 'uint256'
 }) -%>
-contract SimpleSortedTest {
-    using uint256_sorted for uint256_sorted.Set;
-    uint256_sorted.Set private uint256set;
+contract SimpleDirectTest {
+    using uint256_direct for uint256_direct.Index;
+    uint256_direct.Index private uint256index;
     
     function test_add() public {
-        uint256set.insert(1);
-        uint256set.insert(5);
-        uint256set.insert(18);
-        uint256set.insert(32);
-        uint256set.insert(11);
+        uint256index.add(1);
+        uint256index.add(5);
+        uint256index.add(18);
+        uint256index.add(32);
+        uint256index.add(11);
+        uint256index.add(1);
+        uint256index.add(18);
+        uint256index.add(32);
         uint size=0;
-        for(uint i=uint256set.first(); i != 0; i=uint256set.next(i)) {
+        for(uint i=uint256index.first(); i != 0; i=uint256index.next(i)) {
             size += 1;
-            require(uint256set.exists(i));
-            require(!uint256set.exists(i+1));
+            require(uint256index.contains(i));
+            require(!uint256index.contains(i+1));
         }
         require(
             size == 5,
@@ -29,17 +32,50 @@ contract SimpleSortedTest {
         uint256[5] memory expected = [uint256(1), 5, 11, 18, 32];
         for(uint i=0; i < expected.length; i++) {
             require(
-                uint256set.exists(expected[i]),
+                uint256index.contains(expected[i]),
                 "Contains expected failed"
             );
         }
         uint256[4] memory unexpected = [uint256(2), 4, 44, 181];
         for(uint i=0; i < unexpected.length; i++) {
             require(
-                !uint256set.exists(unexpected[i]),
+                !uint256index.contains(unexpected[i]),
+                "Contains unexpected failed"
+            );
+        }
+    }
+
+    function test_add_remove_add() public {
+        uint256index.add(1);
+        uint256index.add(5);
+        uint256index.add(18);
+        uint256index.add(32);
+        uint256index.add(11);
+        uint256index.remove(5);
+        uint256index.remove(18);
+        uint256index.add(12);
+        uint size=0;
+        for(uint i=uint256index.first(); i != 0; i=uint256index.next(i)) {
+            size += 1;
+            require(uint256index.contains(i));
+        }
+        require(
+            size == 4,
+            "Wrong size"
+        );
+        uint256[4] memory expected = [uint256(1), 32, 11, 12];
+        for(uint i=0; i < expected.length; i++) {
+            require(
+                uint256index.contains(expected[i]),
+                "Contains expected failed"
+            );
+        }
+        uint256[4] memory unexpected = [uint256(5), 18, 44, 181];
+        for(uint i=0; i < unexpected.length; i++) {
+            require(
+                !uint256index.contains(unexpected[i]),
                 "Contains unexpected failed"
             );
         }
     }
 }
-

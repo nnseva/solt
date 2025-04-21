@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// Solodity Templates Direct Index library
+// Solidity Templates Direct Index library
 //
 // Copyright (c) 2025 nnseva LGPL 3.0
 //
@@ -16,14 +16,14 @@ library <%- DIRECT_LIBRARY -%> {
         bool red;
     }
 
-    struct Set {
+    struct Index {
         <%- DIRECT_KEYTYPE -%> root;
         mapping(<%- DIRECT_KEYTYPE -%> => Node) nodes;
     }
 
     <%- DIRECT_KEYTYPE -%> private constant EMPTY = 0;
 
-    function first(Set storage self) internal view returns (<%- DIRECT_KEYTYPE -%> _key) {
+    function first(Index storage self) internal view returns (<%- DIRECT_KEYTYPE -%> _key) {
         _key = self.root;
         if (_key != EMPTY) {
             while (self.nodes[_key].left != EMPTY) {
@@ -31,7 +31,7 @@ library <%- DIRECT_LIBRARY -%> {
             }
         }
     }
-    function last(Set storage self) internal view returns (<%- DIRECT_KEYTYPE -%> _key) {
+    function last(Index storage self) internal view returns (<%- DIRECT_KEYTYPE -%> _key) {
         _key = self.root;
         if (_key != EMPTY) {
             while (self.nodes[_key].right != EMPTY) {
@@ -39,47 +39,40 @@ library <%- DIRECT_LIBRARY -%> {
             }
         }
     }
-    function next(Set storage self, <%- DIRECT_KEYTYPE -%> target) internal view returns (<%- DIRECT_KEYTYPE -%> cursor) {
-        require(target != EMPTY);
-        if (self.nodes[target].right != EMPTY) {
-            cursor = treeMinimum(self, self.nodes[target].right);
-        } else {
-            cursor = self.nodes[target].parent;
-            while (cursor != EMPTY && target == self.nodes[cursor].right) {
-                target = cursor;
-                cursor = self.nodes[cursor].parent;
+    function next(Index storage self, <%- DIRECT_KEYTYPE -%> target) internal view returns (<%- DIRECT_KEYTYPE -%> cursor) {
+        if(target != EMPTY) {
+            if (self.nodes[target].right != EMPTY) {
+                cursor = treeMinimum(self, self.nodes[target].right);
+            } else {
+                cursor = self.nodes[target].parent;
+                while (cursor != EMPTY && target == self.nodes[cursor].right) {
+                    target = cursor;
+                    cursor = self.nodes[cursor].parent;
+                }
             }
         }
     }
-    function prev(Set storage self, <%- DIRECT_KEYTYPE -%> target) internal view returns (<%- DIRECT_KEYTYPE -%> cursor) {
-        require(target != EMPTY);
-        if (self.nodes[target].left != EMPTY) {
-            cursor = treeMaximum(self, self.nodes[target].left);
-        } else {
-            cursor = self.nodes[target].parent;
-            while (cursor != EMPTY && target == self.nodes[cursor].left) {
-                target = cursor;
-                cursor = self.nodes[cursor].parent;
+    function prev(Index storage self, <%- DIRECT_KEYTYPE -%> target) internal view returns (<%- DIRECT_KEYTYPE -%> cursor) {
+        if(target != EMPTY) {
+            if (self.nodes[target].left != EMPTY) {
+                cursor = treeMaximum(self, self.nodes[target].left);
+            } else {
+                cursor = self.nodes[target].parent;
+                while (cursor != EMPTY && target == self.nodes[cursor].left) {
+                    target = cursor;
+                    cursor = self.nodes[cursor].parent;
+                }
             }
         }
     }
-    function exists(Set storage self, <%- DIRECT_KEYTYPE -%> key) internal view returns (bool) {
+    function contains(Index storage self, <%- DIRECT_KEYTYPE -%> key) internal view returns (bool) {
         return (key != EMPTY) && ((key == self.root) || (self.nodes[key].parent != EMPTY));
     }
-    function isEmpty(<%- DIRECT_KEYTYPE -%> key) internal pure returns (bool) {
-        return key == EMPTY;
-    }
-    function getEmpty() internal pure returns (<%- DIRECT_KEYTYPE -%>) {
-        return EMPTY;
-    }
-    function getNode(Set storage self, <%- DIRECT_KEYTYPE -%> key) internal view returns (<%- DIRECT_KEYTYPE -%> _returnKey, <%- DIRECT_KEYTYPE -%> _parent, <%- DIRECT_KEYTYPE -%> _left, <%- DIRECT_KEYTYPE -%> _right, bool _red) {
-        require(exists(self, key));
-        return(key, self.nodes[key].parent, self.nodes[key].left, self.nodes[key].right, self.nodes[key].red);
-    }
-
-    function insert(Set storage self, <%- DIRECT_KEYTYPE -%> key) internal {
-        require(key != EMPTY);
-        require(!exists(self, key));
+    function add(Index storage self, <%- DIRECT_KEYTYPE -%> key) internal returns (bool) {
+        if(key == EMPTY)
+            return false;
+        if(contains(self, key))
+            return false;
         <%- DIRECT_KEYTYPE -%> cursor = EMPTY;
         <%- DIRECT_KEYTYPE -%> probe = self.root;
         while (probe != EMPTY) {
@@ -99,10 +92,13 @@ library <%- DIRECT_LIBRARY -%> {
             self.nodes[cursor].right = key;
         }
         insertFixup(self, key);
+        return true;
     }
-    function remove(Set storage self, <%- DIRECT_KEYTYPE -%> key) internal {
-        require(key != EMPTY);
-        require(exists(self, key));
+    function remove(Index storage self, <%- DIRECT_KEYTYPE -%> key) internal returns (bool) {
+        if(key == EMPTY)
+            return false;
+        if(!contains(self, key))
+            return false;
         <%- DIRECT_KEYTYPE -%> probe;
         <%- DIRECT_KEYTYPE -%> cursor;
         if (self.nodes[key].left == EMPTY || self.nodes[key].right == EMPTY) {
@@ -143,22 +139,23 @@ library <%- DIRECT_LIBRARY -%> {
             removeFixup(self, probe);
         }
         delete self.nodes[cursor];
+        return true;
     }
 
-    function treeMinimum(Set storage self, <%- DIRECT_KEYTYPE -%> key) private view returns (<%- DIRECT_KEYTYPE -%>) {
+    function treeMinimum(Index storage self, <%- DIRECT_KEYTYPE -%> key) private view returns (<%- DIRECT_KEYTYPE -%>) {
         while (self.nodes[key].left != EMPTY) {
             key = self.nodes[key].left;
         }
         return key;
     }
-    function treeMaximum(Set storage self, <%- DIRECT_KEYTYPE -%> key) private view returns (<%- DIRECT_KEYTYPE -%>) {
+    function treeMaximum(Index storage self, <%- DIRECT_KEYTYPE -%> key) private view returns (<%- DIRECT_KEYTYPE -%>) {
         while (self.nodes[key].right != EMPTY) {
             key = self.nodes[key].right;
         }
         return key;
     }
 
-    function rotateLeft(Set storage self, <%- DIRECT_KEYTYPE -%> key) private {
+    function rotateLeft(Index storage self, <%- DIRECT_KEYTYPE -%> key) private {
         <%- DIRECT_KEYTYPE -%> cursor = self.nodes[key].right;
         <%- DIRECT_KEYTYPE -%> keyParent = self.nodes[key].parent;
         <%- DIRECT_KEYTYPE -%> cursorLeft = self.nodes[cursor].left;
@@ -177,7 +174,7 @@ library <%- DIRECT_LIBRARY -%> {
         self.nodes[cursor].left = key;
         self.nodes[key].parent = cursor;
     }
-    function rotateRight(Set storage self, <%- DIRECT_KEYTYPE -%> key) private {
+    function rotateRight(Index storage self, <%- DIRECT_KEYTYPE -%> key) private {
         <%- DIRECT_KEYTYPE -%> cursor = self.nodes[key].left;
         <%- DIRECT_KEYTYPE -%> keyParent = self.nodes[key].parent;
         <%- DIRECT_KEYTYPE -%> cursorRight = self.nodes[cursor].right;
@@ -197,7 +194,7 @@ library <%- DIRECT_LIBRARY -%> {
         self.nodes[key].parent = cursor;
     }
 
-    function insertFixup(Set storage self, <%- DIRECT_KEYTYPE -%> key) private {
+    function insertFixup(Index storage self, <%- DIRECT_KEYTYPE -%> key) private {
         <%- DIRECT_KEYTYPE -%> cursor;
         while (key != self.root && self.nodes[self.nodes[key].parent].red) {
             <%- DIRECT_KEYTYPE -%> keyParent = self.nodes[key].parent;
@@ -240,7 +237,7 @@ library <%- DIRECT_LIBRARY -%> {
         self.nodes[self.root].red = false;
     }
 
-    function replaceParent(Set storage self, <%- DIRECT_KEYTYPE -%> a, <%- DIRECT_KEYTYPE -%> b) private {
+    function replaceParent(Index storage self, <%- DIRECT_KEYTYPE -%> a, <%- DIRECT_KEYTYPE -%> b) private {
         <%- DIRECT_KEYTYPE -%> bParent = self.nodes[b].parent;
         self.nodes[a].parent = bParent;
         if (bParent == EMPTY) {
@@ -253,7 +250,7 @@ library <%- DIRECT_LIBRARY -%> {
             }
         }
     }
-    function removeFixup(Set storage self, <%- DIRECT_KEYTYPE -%> key) private {
+    function removeFixup(Index storage self, <%- DIRECT_KEYTYPE -%> key) private {
         <%- DIRECT_KEYTYPE -%> cursor;
         while (key != self.root && !self.nodes[key].red) {
             <%- DIRECT_KEYTYPE -%> keyParent = self.nodes[key].parent;
