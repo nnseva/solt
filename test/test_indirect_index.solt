@@ -6,7 +6,6 @@ pragma solidity >= 0.5 < 0.9;
     INDIRECT_LIBRARY: 'address_direct',
     INDIRECT_KEYTYPE: 'address'
 }) -%>
-import "hardhat/console.sol";
 contract SimpleIndirectTest {
     using address_direct for address_direct.Index;
     address_direct.Index private addressindex;
