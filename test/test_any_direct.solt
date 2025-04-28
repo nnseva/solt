@@ -1,0 +1,45 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+pragma experimental ABIEncoderV2;
+<%- include('solt/std.solt') -%>
+<%- include('solt/index_direct.solt') -%>
+
+contract <%- TESTNAME -%> {
+    using <%- DIRECT_LIBRARY -%> for <%- DIRECT_LIBRARY -%>.Index;
+    <%- DIRECT_LIBRARY -%>.Index private _index;
+
+    function first() public view returns (<%- DIRECT_KEYTYPE -%>) {
+        return _index.first();
+    }
+    function last() public view returns (<%- DIRECT_KEYTYPE -%>) {
+        return _index.last();
+    }
+    function next(<%- DIRECT_KEYTYPE -%> target) public view returns (<%- DIRECT_KEYTYPE -%>) {
+        return _index.next(target);
+    }
+    function prev(<%- DIRECT_KEYTYPE -%> target) public view returns (<%- DIRECT_KEYTYPE -%>) {
+        return _index.prev(target);
+    }
+    function contains(<%- DIRECT_KEYTYPE -%> key) public view returns (bool) {
+        return _index.contains(key);
+    }
+    function add(<%- DIRECT_KEYTYPE -%> key) public {
+        _index.add(key);
+    }
+    function remove(<%- DIRECT_KEYTYPE -%> key) public {
+        _index.remove(key);
+    }
+    function values() public view returns(<%- DIRECT_KEYTYPE -%>[] memory) {
+        uint size = 0;
+        for(<%- DIRECT_KEYTYPE -%> key = _index.first(); key != <%- DIRECT_KEYTYPE -%>(0); key = _index.next(key)) {
+            size += 1;
+        }
+        <%- DIRECT_KEYTYPE -%>[] memory _values = new <%- DIRECT_KEYTYPE -%>[](size);
+        size = 0;
+        for(<%- DIRECT_KEYTYPE -%> key = _index.first(); key != <%- DIRECT_KEYTYPE -%>(0); key = _index.next(key)) {
+            _values[size] = key;
+            size += 1;
+        }
+        return _values;
+    }
+}

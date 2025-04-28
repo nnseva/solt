@@ -8,6 +8,14 @@
 // Copyright (c) BokkyPooBah / Bok Consulting Pty Ltd 2020. The MIT Licence.
 // https://github.com/bokkypoobah/BokkyPooBahsRedBlackTreeLibrary
 // ----------------------------------------------------------------------------
+<%
+    direct_empty = function() {
+        if(DIRECT_KEYTYPE == 'address') {
+            return 'address(0)';
+        }
+        return '0';
+    }
+%>
 library <%- DIRECT_LIBRARY -%> {
     struct Node {
         <%- DIRECT_KEYTYPE -%> parent;
@@ -21,7 +29,7 @@ library <%- DIRECT_LIBRARY -%> {
         mapping(<%- DIRECT_KEYTYPE -%> => Node) nodes;
     }
 
-    <%- DIRECT_KEYTYPE -%> private constant EMPTY = 0;
+    <%- DIRECT_KEYTYPE -%> private constant EMPTY = <%- DIRECT_KEYTYPE -%>(0);
 
     function first(Index storage self) internal view returns (<%- DIRECT_KEYTYPE -%> _key) {
         _key = self.root;
