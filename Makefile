@@ -39,7 +39,7 @@ $(DIRECT_CONTRACTS): test/test_any_direct.solt templates/solt/index_direct.solt
 $(MAP_CONTRACTS): test/test_any_map.solt templates/solt/map.solt
 	$(PP) -D MAP_LIBRARY=$(basename $(notdir $@))_lib -D TESTNAME=$(basename $(notdir $@)) -D MAP_KEYTYPE=$(word 1, $(subst _, ,$(basename $(notdir $@)))) -D MAP_VALUETYPE=$(word 2, $(subst _, ,$(basename $(notdir $@)))) $< >$@
 
-test: compile single_test set_test map_test
+test: compile single_test set_test map_test direct_test
 
 single_test: compile
 	npx hardhat test --grep Single
