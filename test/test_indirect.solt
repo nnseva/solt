@@ -16,24 +16,30 @@ contract SimpleIndirectTest {
         addressindex.add(address(uint160(18)));
         addressindex.add(address(uint160(32)));
         addressindex.add(address(uint160(11)));
+        addressindex.add(address(uint160(0)));
         addressindex.add(address(uint160(1)));
         addressindex.add(address(uint160(18)));
         addressindex.add(address(uint160(32)));
         uint size=0;
-        address[5] memory expected = [
+        address[6] memory expected = [
+            address(uint160(0)),
             address(uint160(1)),
             address(uint160(5)),
             address(uint160(11)),
             address(uint160(18)),
             address(uint160(32))
         ];
-        for(address i=addressindex.first(); i != address(uint160(0)); i=addressindex.next(i)) {
-            require(addressindex.contains(i));
-            require(i == expected[size]);
+        for(uint i=addressindex.first_id(); i != 0; i=addressindex.next_id(i)) {
+            address key = addressindex.get_key(i);
+            uint id = addressindex.get_id(key);
+            require(i == id);
+            require(addressindex.contains_id(i));
+            require(addressindex.contains(key));
+            require(key == expected[size]);
             size += 1;
         }
         require(
-            size == 5,
+            size == 6,
             "Wrong size"
         );
         for(uint i=0; i < expected.length; i++) {
@@ -62,23 +68,29 @@ contract SimpleIndirectTest {
         addressindex.add(address(uint160(18)));
         addressindex.add(address(uint160(32)));
         addressindex.add(address(uint160(11)));
+        addressindex.add(address(uint160(0)));
         addressindex.remove(address(uint160(5)));
         addressindex.remove(address(uint160(18)));
         addressindex.add(address(uint160(12)));
         uint size=0;
-        address[4] memory expected = [
+        address[5] memory expected = [
+            address(uint160(0)),
             address(uint160(1)),
             address(uint160(11)),
             address(uint160(12)),
             address(uint160(32))
         ];
-        for(address i=addressindex.first(); i != address(uint160(0)); i=addressindex.next(i)) {
-            require(addressindex.contains(i));
-            require(i == expected[size]);
+        for(uint i=addressindex.first_id(); i != 0; i=addressindex.next_id(i)) {
+            address key = addressindex.get_key(i);
+            uint id = addressindex.get_id(key);
+            require(i == id);
+            require(addressindex.contains_id(i));
+            require(addressindex.contains(key));
+            require(key == expected[size]);
             size += 1;
         }
         require(
-            size == 4,
+            size == 5,
             "Wrong size"
         );
         for(uint i=0; i < expected.length; i++) {
@@ -99,5 +111,18 @@ contract SimpleIndirectTest {
                 "Contains unexpected failed"
             );
         }
+    }
+    function values() public view returns(address[] memory) {
+        uint size = 0;
+        for(uint i = addressindex.first_id(); i != 0; i = addressindex.next_id(i)) {
+            size += 1;
+        }
+        address[] memory _values = new address[](size);
+        size = 0;
+        for(uint i = addressindex.first_id(); i != 0; i = addressindex.next_id(i)) {
+            _values[size] = addressindex.get_key(i);
+            size += 1;
+        }
+        return _values;
     }
 }

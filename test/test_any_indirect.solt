@@ -1,0 +1,66 @@
+/// SPDX-License-Identifier: LGPL3
+pragma solidity >= 0.5 < 0.9;
+pragma experimental ABIEncoderV2;
+<%- include('solt/std.solt') -%>
+<%- include('solt/index_indirect.solt') -%>
+
+contract <%- TESTNAME -%> {
+    using <%- INDIRECT_LIBRARY -%> for <%- INDIRECT_LIBRARY -%>.Index;
+    <%- INDIRECT_LIBRARY -%>.Index private _index;
+
+    function get_key(uint id) public view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        return _index.get_key(id);
+    }
+    function get_id(<%- argtype(INDIRECT_KEYTYPE) -%> key) public view returns (uint) {
+        return _index.get_id(key);
+    }
+    function first() public view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        return _index.first();
+    }
+    function first_id() public view returns (uint) {
+        return _index.first_id();
+    }
+    function last() public view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        return _index.last();
+    }
+    function last_id() public view returns (uint) {
+        return _index.last_id();
+    }
+    function next(<%- argtype(INDIRECT_KEYTYPE) -%> target) public view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        return _index.next(target);
+    }
+    function next_id(uint id) public view returns (uint) {
+        return _index.next_id(id);
+    }
+    function prev(<%- argtype(INDIRECT_KEYTYPE) -%> target) public view returns (<%- argtype(INDIRECT_KEYTYPE) -%>) {
+        return _index.prev(target);
+    }
+    function prev_id(uint id) public view returns (uint) {
+        return _index.prev_id(id);
+    }
+    function contains(<%- argtype(INDIRECT_KEYTYPE) -%> key) public view returns (bool) {
+        return _index.contains(key);
+    }
+    function contains_id(uint id) public view returns (bool) {
+        return _index.contains_id(id);
+    }
+    function add(<%- argtype(INDIRECT_KEYTYPE) -%> key) public {
+        _index.add(key);
+    }
+    function remove(<%- argtype(INDIRECT_KEYTYPE) -%> key) public {
+        _index.remove(key);
+    }
+    function values() public view returns(<%- argtype(INDIRECT_KEYTYPE) -%>[] memory) {
+        uint size = 0;
+        for(uint i = _index.first_id(); i != 0; i = _index.next_id(i)) {
+            size += 1;
+        }
+        <%- argtype(INDIRECT_KEYTYPE) -%>[] memory _values = new <%- argtype(INDIRECT_KEYTYPE) -%>[](size);
+        size = 0;
+        for(uint i = _index.first_id(); i != 0; i = _index.next_id(i)) {
+            _values[size] = _index.get_key(i);
+            size += 1;
+        }
+        return _values;
+    }
+}
