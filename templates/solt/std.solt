@@ -12,9 +12,16 @@ is_valuetype = function(name) {
 argtype = function(name) {
     // the function returns argument type for the type name
     // when applied to the argument list, return list,
-    // or variable definition
+    // or variable definition, if the memory is assumed
     if(is_valuetype(name)) return name;
     return `${name} memory`;
+}
+storagetype = function(name) {
+    // the function returns argument type for the type name
+    // when applied to the argument list, return list,
+    // or variable definition, if the storage is assumed
+    if(is_valuetype(name)) return name;
+    return `${name} storage`;
 }
 include_with = function(name, args) {
     var save = {};

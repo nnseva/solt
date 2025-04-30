@@ -1,41 +1,60 @@
 /// SPDX-License-Identifier: LGPL3
 pragma solidity >= 0.5 < 0.9;
+pragma experimental ABIEncoderV2;
+
 <%- include('solt/std.solt') -%>
-// define the indirect index of address
+// define the indirect index of bytes
+<% KEYCOMPARE =
+    ' for(uint i=0; i < key1.length && i < key2.length; i++) {' +
+    '   if(key1[i] == key2[i]) {' +
+    '       continue;' +
+    '   } else if(key1[i] < key2[i]) {' +
+    '       return true;' +
+    '   } else {' +
+    '       return false;' +
+    '   }' +
+    ' }' +
+    ' return key1.length < key2.length;'
+-%>
 <%- include_with('solt/index_indirect.solt', {
-    INDIRECT_LIBRARY: 'address_direct',
-    INDIRECT_KEYTYPE: 'address'
+    INDIRECT_LIBRARY: 'bytes_indirect',
+    INDIRECT_KEYTYPE: 'bytes',
+    INDIRECT_KEYCOMPARE: KEYCOMPARE
 }) -%>
 contract SimpleIndirectTest {
-    using address_direct for address_direct.Index;
-    address_direct.Index private addressindex;
-    
+    using bytes_indirect for bytes_indirect.Index;
+    bytes_indirect.Index private bytesindex;
+
+    function compare_bytes(bytes memory key1, bytes memory key2) internal pure returns(bool) {
+        <%- KEYCOMPARE -%>
+    }
+
     function test_add() public {
-        addressindex.add(address(uint160(1)));
-        addressindex.add(address(uint160(5)));
-        addressindex.add(address(uint160(18)));
-        addressindex.add(address(uint160(32)));
-        addressindex.add(address(uint160(11)));
-        addressindex.add(address(uint160(0)));
-        addressindex.add(address(uint160(1)));
-        addressindex.add(address(uint160(18)));
-        addressindex.add(address(uint160(32)));
+        bytesindex.add(bytes("1"));
+        bytesindex.add(bytes("5"));
+        bytesindex.add(bytes("18"));
+        bytesindex.add(bytes("323334"));
+        bytesindex.add(bytes("11"));
+        bytesindex.add(bytes("0"));
+        bytesindex.add(bytes("1"));
+        bytesindex.add(bytes("18"));
+        bytesindex.add(bytes("323334"));
         uint size=0;
-        address[6] memory expected = [
-            address(uint160(0)),
-            address(uint160(1)),
-            address(uint160(5)),
-            address(uint160(11)),
-            address(uint160(18)),
-            address(uint160(32))
+        bytes[6] memory expected = [
+            bytes("0"),
+            bytes("1"),
+            bytes("11"),
+            bytes("18"),
+            bytes("323334"),
+            bytes("5")
         ];
-        for(uint i=addressindex.first_id(); i != 0; i=addressindex.next_id(i)) {
-            address key = addressindex.get_key(i);
-            uint id = addressindex.get_id(key);
+        for(uint i=bytesindex.first_id(); i != 0; i=bytesindex.next_id(i)) {
+            bytes memory key = bytesindex.get_key(i);
+            uint id = bytesindex.get_id(key);
             require(i == id);
-            require(addressindex.contains_id(i));
-            require(addressindex.contains(key));
-            require(key == expected[size]);
+            require(bytesindex.contains_id(i));
+            require(bytesindex.contains(key));
+            require(!compare_bytes(key, expected[size]));
             size += 1;
         }
         require(
@@ -44,49 +63,49 @@ contract SimpleIndirectTest {
         );
         for(uint i=0; i < expected.length; i++) {
             require(
-                addressindex.contains(expected[i]),
+                bytesindex.contains(expected[i]),
                 "Contains expected failed"
             );
         }
-        address[4] memory unexpected = [
-            address(uint160(2)),
-            address(uint160(4)),
-            address(uint160(44)),
-            address(uint160(181))
+        bytes[4] memory unexpected = [
+            bytes("2"),
+            bytes("4"),
+            bytes("44"),
+            bytes("181")
         ];
         for(uint i=0; i < unexpected.length; i++) {
             require(
-                !addressindex.contains(unexpected[i]),
+                !bytesindex.contains(unexpected[i]),
                 "Contains unexpected failed"
             );
         }
     }
 
     function test_add_remove_add() public {
-        addressindex.add(address(uint160(1)));
-        addressindex.add(address(uint160(5)));
-        addressindex.add(address(uint160(18)));
-        addressindex.add(address(uint160(32)));
-        addressindex.add(address(uint160(11)));
-        addressindex.add(address(uint160(0)));
-        addressindex.remove(address(uint160(5)));
-        addressindex.remove(address(uint160(18)));
-        addressindex.add(address(uint160(12)));
+        bytesindex.add(bytes("1"));
+        bytesindex.add(bytes("5"));
+        bytesindex.add(bytes("18"));
+        bytesindex.add(bytes("323334"));
+        bytesindex.add(bytes("11"));
+        bytesindex.add(bytes("0"));
+        bytesindex.remove(bytes("5"));
+        bytesindex.remove(bytes("18"));
+        bytesindex.add(bytes("12"));
         uint size=0;
-        address[5] memory expected = [
-            address(uint160(0)),
-            address(uint160(1)),
-            address(uint160(11)),
-            address(uint160(12)),
-            address(uint160(32))
+        bytes[5] memory expected = [
+            bytes("0"),
+            bytes("1"),
+            bytes("11"),
+            bytes("12"),
+            bytes("323334")
         ];
-        for(uint i=addressindex.first_id(); i != 0; i=addressindex.next_id(i)) {
-            address key = addressindex.get_key(i);
-            uint id = addressindex.get_id(key);
+        for(uint i=bytesindex.first_id(); i != 0; i=bytesindex.next_id(i)) {
+            bytes memory key = bytesindex.get_key(i);
+            uint id = bytesindex.get_id(key);
             require(i == id);
-            require(addressindex.contains_id(i));
-            require(addressindex.contains(key));
-            require(key == expected[size]);
+            require(bytesindex.contains_id(i));
+            require(bytesindex.contains(key));
+            require(!compare_bytes(key, expected[size]));
             size += 1;
         }
         require(
@@ -95,32 +114,32 @@ contract SimpleIndirectTest {
         );
         for(uint i=0; i < expected.length; i++) {
             require(
-                addressindex.contains(expected[i]),
+                bytesindex.contains(expected[i]),
                 "Contains expected failed"
             );
         }
-        address[4] memory unexpected = [
-            address(uint160(5)),
-            address(uint160(18)),
-            address(uint160(44)),
-            address(uint160(181))
+        bytes[4] memory unexpected = [
+            bytes("5"),
+            bytes("18"),
+            bytes("44"),
+            bytes("181")
         ];
         for(uint i=0; i < unexpected.length; i++) {
             require(
-                !addressindex.contains(unexpected[i]),
+                !bytesindex.contains(unexpected[i]),
                 "Contains unexpected failed"
             );
         }
     }
-    function values() public view returns(address[] memory) {
+    function values() public view returns(bytes[] memory) {
         uint size = 0;
-        for(uint i = addressindex.first_id(); i != 0; i = addressindex.next_id(i)) {
+        for(uint i = bytesindex.first_id(); i != 0; i = bytesindex.next_id(i)) {
             size += 1;
         }
-        address[] memory _values = new address[](size);
+        bytes[] memory _values = new bytes[](size);
         size = 0;
-        for(uint i = addressindex.first_id(); i != 0; i = addressindex.next_id(i)) {
-            _values[size] = addressindex.get_key(i);
+        for(uint i = bytesindex.first_id(); i != 0; i = bytesindex.next_id(i)) {
+            _values[size] = bytesindex.get_key(i);
             size += 1;
         }
         return _values;
