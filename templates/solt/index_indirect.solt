@@ -131,7 +131,7 @@ library <%- INDIRECT_LIBRARY -%> {
 
     function contains(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal view returns (bool) {
         // Returns, whether the key is in the index O(lg(size))
-        return contains_id(self, get_id(self, key));
+        return get_id(self, key) != 0;
     }
     function contains_id(Index storage self, uint id) internal view returns (bool) {
         // Returns, whether the ID is in the index O(1)
@@ -180,7 +180,7 @@ library <%- INDIRECT_LIBRARY -%> {
         return true;
     }
 
-    function remove(Index storage self, <%- INDIRECT_KEYTYPE -%> key) internal returns (bool) {
+    function remove(Index storage self, <%- argtype(INDIRECT_KEYTYPE) -%> key) internal returns (bool) {
         // Removes the key from the index O(lg(size))
         // returns true if removed, or false if not present
         if(!contains(self, key))

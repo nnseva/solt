@@ -78,4 +78,17 @@ contract SimpleDirectTest {
             );
         }
     }
+    function values() public view returns(uint256[] memory) {
+        uint size = 0;
+        for(uint256 key = uint256index.first(); key != 0; key = uint256index.next(key)) {
+            size += 1;
+        }
+        uint256[] memory _values = new uint256[](size);
+        size = 0;
+        for(uint256 key = uint256index.first(); key != 0; key = uint256index.next(key)) {
+            _values[size] = key;
+            size += 1;
+        }
+        return _values;
+    }
 }
